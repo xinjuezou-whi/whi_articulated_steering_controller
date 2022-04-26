@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{a4b84c9f-1426-4d72-b3b5-f1561dc9bf61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{d5920913-2894-4868-b0f4-7794075ef5e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include\whi_articulated_steering_controller">
+      <UniqueIdentifier>{f4840568-ebb5-4fca-84fd-1a26ebc7bdfa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\sdk">
+      <UniqueIdentifier>{484cc339-ba83-4b3d-902c-2c3a3a1802c8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\whi_articulated_steering_controller.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sdk\odometry.cpp">
+      <Filter>src\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sdk\speed_limiter.cpp">
+      <Filter>src\sdk</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\whi_articulated_steering_controller\whi_articulated_steering_controller.h">
+      <Filter>include\whi_articulated_steering_controller</Filter>
+    </ClInclude>
+    <ClInclude Include="include\whi_articulated_steering_controller\odometry.h">
+      <Filter>include\whi_articulated_steering_controller</Filter>
+    </ClInclude>
+    <ClInclude Include="include\whi_articulated_steering_controller\speed_limiter.h">
+      <Filter>include\whi_articulated_steering_controller</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
