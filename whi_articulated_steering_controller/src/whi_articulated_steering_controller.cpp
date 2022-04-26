@@ -24,7 +24,7 @@ All text above must be included in any redistribution.
 #include <tf/transform_datatypes.h>
 #include <pluginlib/class_list_macros.h>
 
-namespace articulated_steering_controller
+namespace whi_articulated_steering_controller
 {
     bool ArticulatedSteeringController::init(hardware_interface::RobotHW* RobotHw,
         ros::NodeHandle& RootNh,
@@ -450,5 +450,5 @@ namespace articulated_steering_controller
         return true;
     }
 
-    PLUGINLIB_EXPORT_CLASS(ArticulatedSteeringController, controller_interface::ControllerBase)
-} // namespace articulated_steering_controller
+    PLUGINLIB_EXPORT_CLASS(whi_articulated_steering_controller::ArticulatedSteeringController, controller_interface::ControllerBase)
+} // namespace whi_articulated_steering_controller

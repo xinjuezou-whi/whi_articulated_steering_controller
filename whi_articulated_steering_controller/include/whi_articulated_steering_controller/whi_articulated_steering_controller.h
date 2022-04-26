@@ -30,7 +30,7 @@ Changelog:
 #include <tf/tfMessage.h>
 #include <urdf_parser/urdf_parser.h>
 
-namespace articulated_steering_controller
+namespace whi_articulated_steering_controller
 {
     class ArticulatedSteeringController
         : public controller_interface::MultiInterfaceController<
@@ -39,6 +39,7 @@ namespace articulated_steering_controller
     {
     public:
         ArticulatedSteeringController() = default;
+        ~ArticulatedSteeringController() = default;
 
         /**
          * \brief Initialize controller
@@ -162,4 +163,4 @@ namespace articulated_steering_controller
         whi_kinematic_controller::SpeedLimiter limiter_lin_;
         whi_kinematic_controller::SpeedLimiter limiter_ang_;
     };
-} // namespace articulated_steering_controller
+} // namespace whi_articulated_steering_controller

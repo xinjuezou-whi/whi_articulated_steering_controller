@@ -17,7 +17,7 @@ Changelog:
 ******************************************************************/
 #include "whi_articulated_steering_controller/odometry.h"
 
-namespace articulated_steering_controller
+namespace whi_articulated_steering_controller
 {
 	namespace bacc = boost::accumulators;
 
@@ -119,4 +119,4 @@ namespace articulated_steering_controller
 			y_ += -r * (cos(heading_) - cos(headingOld));
 		}
 	}
-} // namespace articulated_steering_controller
+} // namespace whi_articulated_steering_controller

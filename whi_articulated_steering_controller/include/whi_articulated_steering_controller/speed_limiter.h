@@ -21,6 +21,7 @@ namespace whi_kinematic_controller
     {
     public:
         SpeedLimiter() = default;
+        ~SpeedLimiter() = default;
 
         /**
          * \brief Limit the velocity and acceleration

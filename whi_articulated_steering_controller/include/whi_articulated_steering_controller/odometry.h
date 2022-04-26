@@ -22,7 +22,7 @@ Changelog:
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
 
-namespace articulated_steering_controller
+namespace whi_articulated_steering_controller
 {
     namespace bacc = boost::accumulators;
 
@@ -44,6 +44,7 @@ namespace articulated_steering_controller
          */
         Odometry() = delete;
         Odometry(double WheelSeparationH, double WheelRadius, size_t VelocityRollingWindowSize = 10);
+        ~Odometry() = default;
 
         /**
          * \brief Initialize the odometry
@@ -160,4 +161,4 @@ namespace articulated_steering_controller
         // integration funcion, used to integrate the odometry:
         IntegrationFunction integrate_fun_{ nullptr };
     };
-} // namespace articulated_steering_controller
+} // namespace whi_articulated_steering_controller
