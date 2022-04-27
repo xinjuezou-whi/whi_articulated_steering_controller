@@ -38,7 +38,7 @@ namespace whi_articulated_steering_controller
         hardware_interface::VelocityJointInterface>
     {
     public:
-        ArticulatedSteeringController() = default;
+        ArticulatedSteeringController();
         ~ArticulatedSteeringController() = default;
 
         /**

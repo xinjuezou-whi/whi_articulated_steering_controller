@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\whi_articulated_steering_controller\odometry.h" />
+    <ClInclude Include="include\whi_articulated_steering_controller\platform.h" />
     <ClInclude Include="include\whi_articulated_steering_controller\speed_limiter.h" />
     <ClInclude Include="include\whi_articulated_steering_controller\whi_articulated_steering_controller.h" />
   </ItemGroup>
@@ -97,7 +98,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>/opt/ros/noetic/lib;/opt/ros/melodic/lib;/usr/lib/aarch64-linux-gnu/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>roslib;roscpp;rosconsole;rospack;rostime;roscpp_serialization;xmlrpcpp;cpp_common;rosconsole_log4cxx;rosconsole_backend_interface;class_loader;controller_manager;console_bridge;urdf;urdfdom_model;pthread;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>roslib;roscpp;rosconsole;rospack;rostime;roscpp_serialization;xmlrpcpp;cpp_common;rosconsole_log4cxx;rosconsole_backend_interface;class_loader;controller_manager;console_bridge;urdf;urdfdom_model;pthread;boost_system;%(LibraryDependencies)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -35,5 +35,8 @@
     <ClInclude Include="include\whi_articulated_steering_controller\speed_limiter.h">
       <Filter>include\whi_articulated_steering_controller</Filter>
     </ClInclude>
+    <ClInclude Include="include\whi_articulated_steering_controller\platform.h">
+      <Filter>include\whi_articulated_steering_controller</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

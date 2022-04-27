@@ -1,4 +1,4 @@
-/******************************************************************
+﻿/******************************************************************
 controller of articulated steering
 it is a plugin or ros_controls/ros_controllers
 
@@ -14,6 +14,7 @@ All text above must be included in any redistribution.
 
 ******************************************************************/
 #include "whi_articulated_steering_controller/whi_articulated_steering_controller.h"
+#include "whi_articulated_steering_controller/platform.h"
 
 #include <memory>
 #include <controller_interface/multi_interface_controller.h>
@@ -26,13 +27,20 @@ All text above must be included in any redistribution.
 
 namespace whi_articulated_steering_controller
 {
+    ArticulatedSteeringController::ArticulatedSteeringController()
+    {
+        /// node version and copyright announcement
+        std::cout << "\nWHI articulated steering controller VERSION 00.02" << std::endl;
+        std::cout << "Copyright © 2022-2023 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
+    }
+
     bool ArticulatedSteeringController::init(hardware_interface::RobotHW* RobotHw,
         ros::NodeHandle& RootNh,
         ros::NodeHandle& ControllerNh)
     {
         using VelIface = hardware_interface::VelocityJointInterface;
         using PosIface = hardware_interface::PositionJointInterface;
-        using StateIface = hardware_interface::JointStateInterface;
+        //using StateIface = hardware_interface::JointStateInterface;
 
         // get multiple types of hardware_interface
         VelIface* velJointIf = RobotHw->get<VelIface>(); // vel for wheels
@@ -46,11 +54,9 @@ namespace whi_articulated_steering_controller
         // single rear wheel joint
         std::string rearWheelName;
         ControllerNh.param("rear_wheel", rearWheelName, std::string("joint_rear_wheel"));
-
         // single rotational steer joint
         std::string rotationalSteerName;
         ControllerNh.param("front_steer", rotationalSteerName, std::string("joint_rotational_steer"));
-
 
         // odometry related:
         double publishRate = 0.0;
@@ -151,7 +157,6 @@ namespace whi_articulated_steering_controller
         {
             double wheelPos = rear_wheel_joint_.getPosition();
             double steerPos = rotational_steer_joint_.getPosition();
-
             if (std::isnan(wheelPos) || std::isnan(steerPos))
             {
                 return;
@@ -258,7 +263,14 @@ namespace whi_articulated_steering_controller
                 return;
             }
 
-            command_struct_.ang = Command.angular.z;
+            if (std::isnormal(Command.angular.z * wheel_separation_h_ / Command.linear.x))
+            {
+                command_struct_.ang = atan(Command.angular.z * wheel_separation_h_ / Command.linear.x);
+            }
+            else
+            {
+                command_struct_.ang = Command.angular.z;
+            }
             command_struct_.lin = Command.linear.x;
             command_struct_.stamp = ros::Time::now();
             command_.writeFromNonRT(command_struct_);
@@ -354,20 +366,23 @@ namespace whi_articulated_steering_controller
         ControllerNh.getParam("pose_covariance_diagonal", poseCovList);
         ROS_ASSERT(poseCovList.getType() == XmlRpc::XmlRpcValue::TypeArray);
         ROS_ASSERT(poseCovList.size() == 6);
-
+#if RASPBERRY_PI
         for (const auto& it : poseCovList)
         {
             ROS_ASSERT(it.getType() == XmlRpc::XmlRpcValue::TypeDouble);
         }
+#endif
 
         XmlRpc::XmlRpcValue twistCovList;
         ControllerNh.getParam("twist_covariance_diagonal", twistCovList);
         ROS_ASSERT(twistCovList.getType() == XmlRpc::XmlRpcValue::TypeArray);
         ROS_ASSERT(twistCovList.size() == 6);
+#if RASPBERRY_PI
         for (const auto& it : twistCovList)
         {
             ROS_ASSERT(it.getType() == XmlRpc::XmlRpcValue::TypeDouble);
         }
+#endif
 
         // setup odometry realtime publisher + odom message constant fields
         odom_pub_.reset(new realtime_tools::RealtimePublisher<nav_msgs::Odometry>(ControllerNh, "odom", 100));
