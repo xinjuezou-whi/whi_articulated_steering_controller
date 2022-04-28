@@ -30,7 +30,7 @@ namespace whi_articulated_steering_controller
     ArticulatedSteeringController::ArticulatedSteeringController()
     {
         /// node version and copyright announcement
-        std::cout << "\nWHI articulated steering controller VERSION 00.02" << std::endl;
+        std::cout << "\nWHI articulated steering controller VERSION 00.03" << std::endl;
         std::cout << "Copyright © 2022-2023 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
     }
 
@@ -265,7 +265,7 @@ namespace whi_articulated_steering_controller
 
             if (std::isnormal(Command.angular.z * wheel_separation_h_ / Command.linear.x))
             {
-                command_struct_.ang = atan(Command.angular.z * wheel_separation_h_ / Command.linear.x);
+                command_struct_.ang = atan(Command.angular.z * wheel_separation_h_ / fabs(Command.linear.x));
             }
             else
             {
