@@ -1,0 +1,10 @@
+<library path="lib/libwhi_articulated_steering_controller">
+
+  <class name="whi_articulated_steering_controller/ArticulatedSteeringController" type="whi_articulated_steering_controller::ArticulatedSteeringController" base_class_type="controller_interface::ControllerBase">
+    <description>
+      the ArticulatedSteeringController tracks velocity commands. It expects 1 VelocityJointInterface and 1 PositionJointInterfece types of hardware interfaces
+    </description>
+  </class>
+
+</library>
+
