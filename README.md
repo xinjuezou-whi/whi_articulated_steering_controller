@@ -1,4 +1,5 @@
 # whi_articulated_steering_controller
+The kinematics controller for the articulated vehicle which consists of two separate components: a powered unit called the tractor or truck, and a trailer or semi-trailer that is attached to the tractor using a pivoting joint.
 
 ## Typical articulated kinematic model without slipping
 ![image](https://github.com/xinjuezou-whi/whi_articulated_steering_controller/assets/72239958/faf8f10a-b02f-4659-8740-5c47045a727f)
