@@ -43,7 +43,8 @@ namespace whi_articulated_steering_controller
          * \param VelocityRollingWindowSize Rolling window size used to compute the velocity mean
          */
         Odometry() = delete;
-        Odometry(double WheelSeparationH, double WheelRadius, size_t VelocityRollingWindowSize = 10);
+        Odometry(double WheelSeparationRear, double WheelSeparationFront,
+            double WheelRadius, size_t VelocityRollingWindowSize = 10);
         ~Odometry() = default;
 
         /**
@@ -147,9 +148,12 @@ namespace whi_articulated_steering_controller
         double angular_{ 0.0 }; // [rad/s]
 
         // wheel kinematic parameters [m]:
-        double wheel_separation_h_{ 0.15 };
+        double wheel_separation_rear_{ 0.15 };
+        double wheel_separation_front_{ 0.15 };
         double wheel_radius_{ 0.0325 };
 
+        // previous steer position
+        double old_steer_pos_{ 0.0 };
         // previous wheel position/state [rad]:
         double rear_wheel_old_pos_{ 0.0 };
 

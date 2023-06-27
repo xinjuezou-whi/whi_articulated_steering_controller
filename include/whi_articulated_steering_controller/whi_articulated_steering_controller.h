@@ -132,6 +132,8 @@ namespace whi_articulated_steering_controller
         std::unique_ptr<Odometry> odometry_{ nullptr };
 
         // wheel separation, wrt the midpoint of the wheel width:
+        double wheel_separation_rear_{ 0.15 };
+        double wheel_separation_front_{ 0.15 };
         double wheel_separation_h_{ 0.15 };
 
         // wheel radius (assuming it's the same for the left and right wheels):

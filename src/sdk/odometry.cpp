@@ -21,14 +21,16 @@ namespace whi_articulated_steering_controller
 {
 	namespace bacc = boost::accumulators;
 
-	Odometry::Odometry(double WheelSeparationH, double WheelRadius, size_t VelocityRollingWindowSize /*= 10*/)
+	Odometry::Odometry(double WheelSeparationRear, double WheelSeparationFront,
+		double WheelRadius, size_t VelocityRollingWindowSize /*= 10*/)
 		: time_stamp_(0.0)
 		, x_(0.0)
 		, y_(0.0)
 		, heading_(0.0)
 		, linear_(0.0)
 		, angular_(0.0)
-		, wheel_separation_h_(WheelSeparationH)
+		, wheel_separation_rear_(WheelSeparationRear)
+		, wheel_separation_front_(WheelSeparationFront)
 		, wheel_radius_(WheelRadius)
 		, rear_wheel_old_pos_(0.0)
 		, velocity_rolling_window_size_(VelocityRollingWindowSize)
@@ -57,7 +59,10 @@ namespace whi_articulated_steering_controller
 
 		/// compute linear and angular diff:
 		const double linear = rearWheelEstVel;
-		const double angular = tan(RotationalSteerPos) * linear / wheel_separation_h_;
+		const double angular = (linear * sin(RotationalSteerPos) -
+			wheel_separation_rear_ * cos(RotationalSteerPos) * (RotationalSteerPos - old_steer_pos_)) /
+			(wheel_separation_rear_ * cos(RotationalSteerPos) + wheel_separation_front_);
+		old_steer_pos_ = RotationalSteerPos;
 
 		/// integrate odometry:
 		integrate_fun_(linear, angular);

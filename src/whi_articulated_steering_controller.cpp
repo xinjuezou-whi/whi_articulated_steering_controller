@@ -30,7 +30,7 @@ namespace whi_articulated_steering_controller
     ArticulatedSteeringController::ArticulatedSteeringController()
     {
         /// node version and copyright announcement
-        std::cout << "\nWHI articulated steering controller VERSION 00.03" << std::endl;
+        std::cout << "\nWHI articulated steering controller VERSION 00.04" << std::endl;
         std::cout << "Copyright © 2022-2023 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
     }
 
@@ -116,6 +116,8 @@ namespace whi_articulated_steering_controller
         ControllerNh.param("angular/z/max_jerk", limiter_ang_.max_jerk_, 0.5);
         ControllerNh.param("angular/z/min_jerk", limiter_ang_.min_jerk_, -0.5);
 
+        ControllerNh.param("wheel_separation_rear", wheel_separation_rear_, 0.15);
+        ControllerNh.param("wheel_separation_front", wheel_separation_front_, 0.15);
         // if either parameter is not available, we need to look up the value in the URDF
         bool lookupWheelSeparationH = !ControllerNh.getParam("wheel_separation_h", wheel_separation_h_);
         bool lookupWheelRadius = !ControllerNh.getParam("wheel_radius", wheel_radius_);
@@ -127,8 +129,11 @@ namespace whi_articulated_steering_controller
 
         // regardless of how we got the separation and radius, use them to set the odometry parameters
         const double wheelSeparationH = wheel_separation_h_multiplier_ * wheel_separation_h_;
+        const double wheelSeparationRearM = wheel_separation_h_multiplier_ * wheel_separation_rear_;
+        const double wheelSeparationFrontM = wheel_separation_h_multiplier_ * wheel_separation_front_;
         const double wheelRadius = wheel_radius_multiplier_ * wheel_radius_;
-        odometry_ = std::make_unique<Odometry>(wheelSeparationH, wheelRadius, velocityRollingWindowSize);
+        odometry_ = std::make_unique<Odometry>(wheelSeparationRearM, wheelSeparationFrontM,
+            wheelRadius, velocityRollingWindowSize);
         ROS_INFO_STREAM_NAMED(name_, "odometry params : wheel separation height " << wheelSeparationH << ", wheel radius " << wheelRadius);
 
         setOdomPubFields(RootNh, ControllerNh);
