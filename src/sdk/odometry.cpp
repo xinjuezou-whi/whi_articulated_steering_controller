@@ -60,8 +60,8 @@ namespace whi_articulated_steering_controller
 		/// compute linear and angular diff:
 		const double linear = rearWheelEstVel;
 		const double angular = (linear * sin(RotationalSteerPos) -
-			wheel_separation_rear_ * cos(RotationalSteerPos) * (RotationalSteerPos - old_steer_pos_)) /
-			(wheel_separation_rear_ * cos(RotationalSteerPos) + wheel_separation_front_);
+			wheel_separation_front_ * cos(RotationalSteerPos) * (RotationalSteerPos - old_steer_pos_)) /
+			(wheel_separation_front_ * cos(RotationalSteerPos) + wheel_separation_rear_);
 		old_steer_pos_ = RotationalSteerPos;
 
 		/// integrate odometry:
