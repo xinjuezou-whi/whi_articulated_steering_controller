@@ -99,6 +99,9 @@ namespace whi_articulated_steering_controller
          */
         void setOdomPubFields(ros::NodeHandle& RootNh, ros::NodeHandle& ControllerNh);
 
+        geometry_msgs::Point applyRotationXy(const geometry_msgs::Point& Src,
+            const geometry_msgs::Point& Center, double Theta);
+
     protected:
         static bool getWheelRadius(const urdf::LinkConstSharedPtr& WheelLink, double& WheelRadius);
         static bool isCylinder(const urdf::LinkConstSharedPtr& Link);
@@ -164,5 +167,12 @@ namespace whi_articulated_steering_controller
         Commands last0_cmd_;
         whi_kinematic_controller::SpeedLimiter limiter_lin_;
         whi_kinematic_controller::SpeedLimiter limiter_ang_;
+
+        std::vector<geometry_msgs::Point> foot_print_trailer_;
+        std::vector<geometry_msgs::Point> foot_print_joint_;
+        std::vector<geometry_msgs::Point> foot_print_tractor_;
+        geometry_msgs::Point pivot_axis_;
+        std::vector<geometry_msgs::Point> foot_print_poly_;
+        std::unique_ptr<ros::Publisher> pub_footprint_{ nullptr };
     };
 } // namespace whi_articulated_steering_controller
