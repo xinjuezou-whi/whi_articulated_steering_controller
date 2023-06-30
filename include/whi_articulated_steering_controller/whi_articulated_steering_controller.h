@@ -29,6 +29,7 @@ Changelog:
 #include <realtime_tools/realtime_publisher.h>
 #include <tf/tfMessage.h>
 #include <urdf_parser/urdf_parser.h>
+#include <geometry_msgs/Polygon.h>
 
 namespace whi_articulated_steering_controller
 {
@@ -101,10 +102,12 @@ namespace whi_articulated_steering_controller
 
         geometry_msgs::Point applyRotationXy(const geometry_msgs::Point& Src,
             const geometry_msgs::Point& Center, double Theta);
+        void publishDynamicFootprint(double SteerPos);
 
     protected:
         static bool getWheelRadius(const urdf::LinkConstSharedPtr& WheelLink, double& WheelRadius);
         static bool isCylinder(const urdf::LinkConstSharedPtr& Link);
+        static geometry_msgs::Polygon toMsg(const std::vector<geometry_msgs::Point>& Points);
 
     private:
         std::string name_;

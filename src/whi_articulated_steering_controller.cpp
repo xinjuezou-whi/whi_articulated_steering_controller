@@ -23,7 +23,6 @@ All text above must be included in any redistribution.
 #include <realtime_tools/realtime_publisher.h>
 #include <tf/tfMessage.h>
 #include <tf/transform_datatypes.h>
-#include <geometry_msgs/PolygonStamped.h>
 #include <pluginlib/class_list_macros.h>
 
 namespace whi_articulated_steering_controller
@@ -31,7 +30,7 @@ namespace whi_articulated_steering_controller
     ArticulatedSteeringController::ArticulatedSteeringController()
     {
         /// node version and copyright announcement
-        std::cout << "\nWHI articulated steering controller VERSION 00.04.1" << std::endl;
+        std::cout << "\nWHI articulated steering controller VERSION 00.05" << std::endl;
         std::cout << "Copyright © 2022-2023 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
     }
 
@@ -191,8 +190,10 @@ namespace whi_articulated_steering_controller
             pnt.y = tractor[1];
             foot_print_tractor_.push_back(pnt);
 
+            std::string topic;
+            ControllerNh.param("topic", topic, std::string("footprint"));
             pub_footprint_ = std::make_unique<ros::Publisher>(
-                ControllerNh.advertise<geometry_msgs::PolygonStamped>("footprint", 1)); // TODO
+                ControllerNh.advertise<geometry_msgs::Polygon>(topic, 1));
         }
 
         return true;
@@ -279,27 +280,7 @@ namespace whi_articulated_steering_controller
         rotational_steer_joint_.setCommand(currCmd.ang);
 
         // publish dynamic footprint
-        foot_print_poly_.clear();
-        for (const auto& it : foot_print_trailer_)
-        {
-            foot_print_poly_.push_back(applyRotationXy(it, pivot_axis_, steerPos));
-        }
-        for (const auto& it : foot_print_joint_)
-        {
-            foot_print_poly_.push_back(applyRotationXy(it, pivot_axis_, steerPos));
-        }
-        for (const auto& it : foot_print_tractor_)
-        {
-            foot_print_poly_.push_back(it);
-        }
-        if (pub_footprint_)
-        {
-            geometry_msgs::PolygonStamped footprint;
-            footprint.header.frame_id = "map"; // TODO
-            footprint.header.stamp = ros::Time::now();
-            // footprint.polygon.points = foot_print_poly_;
-            // pub_footprint_->publish(footprint);
-        }
+        publishDynamicFootprint(steerPos);
     }
 
     void ArticulatedSteeringController::starting(const ros::Time& Time)
@@ -495,6 +476,38 @@ namespace whi_articulated_steering_controller
         tf_odom_pub_->msg_.transforms[0].header.frame_id = odom_frame_id_;
     }
 
+    geometry_msgs::Point ArticulatedSteeringController::applyRotationXy(const geometry_msgs::Point& Src,
+        const geometry_msgs::Point& Center, double Theta)
+	{
+        geometry_msgs::Point rotated;
+        rotated.x = (Src.x - Center.x) * cos(Theta) - (Src.y - Center.y) * sin(Theta) + Center.x;
+        rotated.y = (Src.x - Center.x) * sin(Theta) + (Src.y - Center.y) * cos(Theta) + Center.y;
+
+        return rotated;
+	}
+
+    void ArticulatedSteeringController::publishDynamicFootprint(double SteerPos)
+    {
+        foot_print_poly_.clear();
+        for (const auto& it : foot_print_trailer_)
+        {
+            foot_print_poly_.push_back(applyRotationXy(it, pivot_axis_, SteerPos));
+        }
+        for (const auto& it : foot_print_joint_)
+        {
+            foot_print_poly_.push_back(applyRotationXy(it, pivot_axis_, SteerPos));
+        }
+        for (const auto& it : foot_print_tractor_)
+        {
+            foot_print_poly_.push_back(it);
+        }
+        if (pub_footprint_)
+        {
+            geometry_msgs::Polygon footprint = toMsg(foot_print_poly_);
+            pub_footprint_->publish(footprint);
+        }
+    }
+
     bool ArticulatedSteeringController::getWheelRadius(const urdf::LinkConstSharedPtr& WheelLink, double& WheelRadius)
     {
         if (!isCylinder(WheelLink))
@@ -542,15 +555,19 @@ namespace whi_articulated_steering_controller
         return true;
     }
 
-    geometry_msgs::Point ArticulatedSteeringController::applyRotationXy(const geometry_msgs::Point& Src,
-        const geometry_msgs::Point& Center, double Theta)
-	{
-        geometry_msgs::Point rotated;
-        rotated.x = (Src.x - Center.x) * cos(Theta) - (Src.y - Center.y) * sin(Theta) + Center.x;
-        rotated.y = (Src.x - Center.x) * sin(Theta) + (Src.y - Center.y) * cos(Theta) + Center.y;
-
-        return rotated;
-	}
+    geometry_msgs::Polygon ArticulatedSteeringController::toMsg(const std::vector<geometry_msgs::Point>& Points)
+    {
+        geometry_msgs::Polygon msg;
+        for (const auto& it : Points)
+        {
+            geometry_msgs::Point32 pnt32;
+            pnt32.x = it.x;
+            pnt32.y = it.y;
+            pnt32.z = it.z;
+            msg.points.push_back(pnt32);
+        }
+        return msg;
+    }
 
     PLUGINLIB_EXPORT_CLASS(whi_articulated_steering_controller::ArticulatedSteeringController, controller_interface::ControllerBase)
 } // namespace whi_articulated_steering_controller
