@@ -30,7 +30,7 @@ namespace whi_articulated_steering_controller
     ArticulatedSteeringController::ArticulatedSteeringController()
     {
         /// node version and copyright announcement
-        std::cout << "\nWHI articulated steering controller VERSION 00.05" << std::endl;
+        std::cout << "\nWHI articulated steering controller VERSION 00.06" << std::endl;
         std::cout << "Copyright © 2022-2023 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
     }
 
@@ -157,7 +157,7 @@ namespace whi_articulated_steering_controller
             pnt.y = trailer[1];
             foot_print_trailer_.push_back(pnt);
 
-            pnt.x -= wheel_separation_front_;
+            pnt.x = wheel_separation_rear_;
             foot_print_joint_.push_back(pnt);
         }
         if (!foot_print_trailer_.empty() &&
@@ -168,10 +168,10 @@ namespace whi_articulated_steering_controller
             pnt.y = trailer[1];
             foot_print_trailer_.push_back(pnt);
 
-            pivot_axis_.x = pnt.x - wheel_separation_front_;
+            pivot_axis_.x = wheel_separation_rear_;
             pivot_axis_.y = 0.0;
 
-            pnt.x -= wheel_separation_front_;
+            pnt.x = wheel_separation_rear_;
             foot_print_joint_.push_back(pnt);
         }
         std::vector<double> tractor;
@@ -489,18 +489,13 @@ namespace whi_articulated_steering_controller
     void ArticulatedSteeringController::publishDynamicFootprint(double SteerPos)
     {
         foot_print_poly_.clear();
-        for (const auto& it : foot_print_trailer_)
-        {
-            foot_print_poly_.push_back(applyRotationXy(it, pivot_axis_, SteerPos));
-        }
-        for (const auto& it : foot_print_joint_)
-        {
-            foot_print_poly_.push_back(applyRotationXy(it, pivot_axis_, SteerPos));
-        }
-        for (const auto& it : foot_print_tractor_)
-        {
-            foot_print_poly_.push_back(it);
-        }
+        // order sensitive
+        foot_print_poly_.push_back(applyRotationXy(foot_print_trailer_.front(), pivot_axis_, SteerPos));
+        foot_print_poly_.push_back(applyRotationXy(foot_print_joint_.front(), pivot_axis_, SteerPos));
+        foot_print_poly_.push_back(foot_print_tractor_.front());
+        foot_print_poly_.push_back(foot_print_tractor_.back());
+        foot_print_poly_.push_back(applyRotationXy(foot_print_joint_.back(), pivot_axis_, SteerPos));
+        foot_print_poly_.push_back(applyRotationXy(foot_print_trailer_.back(), pivot_axis_, SteerPos));
         if (pub_footprint_)
         {
             geometry_msgs::Polygon footprint = toMsg(foot_print_poly_);
