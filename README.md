@@ -16,10 +16,10 @@ Parameters $l_r$ and $l_f$ represent the length of the tractor and the trailer t
 
 ## Dynamic footprint
 Due to the tractor-trailer structure, the forms of the footprint change while the vehicle is turning. The fixed forms of the footprint will mislead the interference of occlusion. Fortunately, the costmap_2d subscribes to the footprint topic with geometry_msgs/Polygon message type, which provides a way for users to publish dynamically changing forms of the footprint
-![image](https://github.com/xinjuezou-whi/whi_articulated_steering_controller/assets/72239958/9b7ccbd1-1b71-422a-ab29-7f8196e4b971)
+![image](https://github.com/xinjuezou-whi/whi_articulated_steering_controller/assets/72239958/02d10ad8-a8f1-438f-bfcf-80fcb5d63a37)
 
 whi_articulated_steering_controller publishes the footprint with user configured topic:
-![dynamic_footprint](https://github.com/xinjuezou-whi/whi_articulated_steering_controller/assets/72239958/32e92eff-d3bb-4b76-9f10-656f5344e304)
+![dynamic_footprint](https://github.com/xinjuezou-whi/whi_articulated_steering_controller/assets/72239958/5384b28a-0107-4849-ac4b-49dd65b5d30e)
 
 ### Parameters
 In controller's parameter yaml file, set the following ones with specified values:
