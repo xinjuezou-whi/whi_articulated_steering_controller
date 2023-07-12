@@ -30,8 +30,8 @@ namespace whi_articulated_steering_controller
     ArticulatedSteeringController::ArticulatedSteeringController()
     {
         /// node version and copyright announcement
-        std::cout << "\nWHI articulated steering controller VERSION 00.06" << std::endl;
-        std::cout << "Copyright © 2022-2023 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
+        std::cout << "\nWHI articulated steering controller VERSION 00.07" << std::endl;
+        std::cout << "Copyright © 2022-2024 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
     }
 
     bool ArticulatedSteeringController::init(hardware_interface::RobotHW* RobotHw,
@@ -53,7 +53,9 @@ namespace whi_articulated_steering_controller
 
         // single rear wheel joint
         std::string rearWheelName;
+        std::string frontWheelName;
         ControllerNh.param("rear_wheel", rearWheelName, std::string("joint_rear_wheel"));
+        ControllerNh.param("front_wheel", frontWheelName, std::string("joint_front_wheel"));
         // single rotational steer joint
         std::string rotationalSteerName;
         ControllerNh.param("front_steer", rotationalSteerName, std::string("joint_rotational_steer"));
@@ -66,8 +68,12 @@ namespace whi_articulated_steering_controller
 
         ControllerNh.param("open_loop", open_loop_, false);
 
-        ControllerNh.param("wheel_separation_h_multiplier", wheel_separation_h_multiplier_, 1.0);
-        ROS_INFO_STREAM_NAMED(name_, "wheel separation height will be multiplied by " << wheel_separation_h_multiplier_ << ".");
+        ControllerNh.param("wheel_separation_rear_multiplier", wheel_separation_rear_multiplier_, 1.0);
+        ROS_INFO_STREAM_NAMED(name_, "wheel separation to tractor will be multiplied by " <<
+            wheel_separation_rear_multiplier_ << ".");
+        ControllerNh.param("wheel_separation_front_multiplier", wheel_separation_front_multiplier_, 1.0);
+        ROS_INFO_STREAM_NAMED(name_, "wheel separation to trailer will be multiplied by " <<
+            wheel_separation_front_multiplier_ << ".");
 
         ControllerNh.param("wheel_radius_multiplier", wheel_radius_multiplier_, 1.0);
         ROS_INFO_STREAM_NAMED(name_, "wheel radius will be multiplied by " << wheel_radius_multiplier_ << ".");
@@ -119,22 +125,25 @@ namespace whi_articulated_steering_controller
         ControllerNh.param("wheel_separation_rear", wheel_separation_rear_, 0.15);
         ControllerNh.param("wheel_separation_front", wheel_separation_front_, 0.15);
         // if either parameter is not available, we need to look up the value in the URDF
-        bool lookupWheelSeparationH = !ControllerNh.getParam("wheel_separation_h", wheel_separation_h_);
+        bool lookupWheelSeparation = !ControllerNh.getParam("wheel_separation_rear", wheel_separation_rear_);
+        lookupWheelSeparation |= !ControllerNh.getParam("wheel_separation_front", wheel_separation_front_);
         bool lookupWheelRadius = !ControllerNh.getParam("wheel_radius", wheel_radius_);
 
-        if (!setOdomParamsFromUrdf(RootNh, rearWheelName, rotationalSteerName, lookupWheelSeparationH, lookupWheelRadius))
+        if (!setOdomParamsFromUrdf(RootNh, rearWheelName, frontWheelName, rotationalSteerName,
+            lookupWheelSeparation, lookupWheelRadius))
         {
             return false;
         }
 
         // regardless of how we got the separation and radius, use them to set the odometry parameters
-        const double wheelSeparationH = wheel_separation_h_multiplier_ * wheel_separation_h_;
-        const double wheelSeparationRearM = wheel_separation_h_multiplier_ * wheel_separation_rear_;
-        const double wheelSeparationFrontM = wheel_separation_h_multiplier_ * wheel_separation_front_;
+        const double wheelSeparationRearM = wheel_separation_rear_multiplier_ * wheel_separation_rear_;
+        const double wheelSeparationFrontM = wheel_separation_front_multiplier_ * wheel_separation_front_;
         const double wheelRadius = wheel_radius_multiplier_ * wheel_radius_;
         odometry_ = std::make_unique<Odometry>(wheelSeparationRearM, wheelSeparationFrontM,
             wheelRadius, velocityRollingWindowSize);
-        ROS_INFO_STREAM_NAMED(name_, "odometry params : wheel separation height " << wheelSeparationH << ", wheel radius " << wheelRadius);
+        ROS_INFO_STREAM_NAMED(name_, "odometry params : wheel separation rear "
+            << wheel_separation_rear_ << ", wheel serparation front " << wheel_separation_front_
+            << ", wheel radius " << wheelRadius);
 
         setOdomPubFields(RootNh, ControllerNh);
 
@@ -321,9 +330,11 @@ namespace whi_articulated_steering_controller
                 return;
             }
 
-            if (std::isnormal(Command.angular.z * wheel_separation_h_ / Command.linear.x))
+            double separation = std::min(wheel_separation_rear_multiplier_, wheel_separation_front_multiplier_);
+            if (std::isnormal(Command.angular.z * separation / Command.linear.x))
             {
-                command_struct_.ang = atan(Command.angular.z * wheel_separation_h_ / fabs(Command.linear.x));
+                command_struct_.ang = 2.0 * atan(Command.angular.z * separation / fabs(Command.linear.x));
+
             }
             else
             {
@@ -345,10 +356,10 @@ namespace whi_articulated_steering_controller
     }
 
     bool ArticulatedSteeringController::setOdomParamsFromUrdf(ros::NodeHandle& RootNh,
-        const std::string RearWheelName, const std::string RotationalSteerName,
-        bool LookupWheelSeparationH, bool LookupWheelRadius)
+        const std::string& RearWheelName, const std::string& FrontWheelName, const std::string& RotationalSteerName,
+        bool LookupWheelSeparation, bool LookupWheelRadius)
     {
-        if (!(LookupWheelSeparationH || LookupWheelRadius))
+        if (!(LookupWheelSeparation || LookupWheelRadius))
         {
             // short-circuit in case we don't need to look up anything, so we don't have to parse the URDF
             return true;
@@ -367,9 +378,10 @@ namespace whi_articulated_steering_controller
         urdf::ModelInterfaceSharedPtr model(urdf::parseURDF(robotModelStr));
 
         urdf::JointConstSharedPtr rearWheelJoint(model->getJoint(RearWheelName));
+        urdf::JointConstSharedPtr frontWheelJoint(model->getJoint(FrontWheelName));
         urdf::JointConstSharedPtr rotationalSteerJoint(model->getJoint(RotationalSteerName));
 
-        if (LookupWheelSeparationH)
+        if (LookupWheelSeparation)
         {
             // get wheel separation
             if (!rearWheelJoint)
@@ -378,7 +390,12 @@ namespace whi_articulated_steering_controller
 
                 return false;
             }
+            if (!frontWheelJoint)
+            {
+                ROS_ERROR_STREAM_NAMED(name_, FrontWheelName << " couldn't be retrieved from model description");
 
+                return false;
+            }
             if (!rotationalSteerJoint)
             {
                 ROS_ERROR_STREAM_NAMED(name_, RotationalSteerName << " couldn't be retrieved from model description");
@@ -390,16 +407,21 @@ namespace whi_articulated_steering_controller
                 << rearWheelJoint->parent_to_joint_origin_transform.position.x << ","
                 << rearWheelJoint->parent_to_joint_origin_transform.position.y << ", "
                 << rearWheelJoint->parent_to_joint_origin_transform.position.z);
-
+            ROS_INFO_STREAM("front wheel to origin: "
+                << frontWheelJoint->parent_to_joint_origin_transform.position.x << ","
+                << frontWheelJoint->parent_to_joint_origin_transform.position.y << ", "
+                << frontWheelJoint->parent_to_joint_origin_transform.position.z);
             ROS_INFO_STREAM("front steer to origin: "
                 << rotationalSteerJoint->parent_to_joint_origin_transform.position.x << ","
                 << rotationalSteerJoint->parent_to_joint_origin_transform.position.y << ", "
                 << rotationalSteerJoint->parent_to_joint_origin_transform.position.z);
 
-            wheel_separation_h_ = fabs(rearWheelJoint->parent_to_joint_origin_transform.position.x -
+            wheel_separation_rear_ = fabs(rearWheelJoint->parent_to_joint_origin_transform.position.x -
                 rotationalSteerJoint->parent_to_joint_origin_transform.position.x);
-
-            ROS_INFO_STREAM("calculated wheel_separation_h: " << wheel_separation_h_);
+            wheel_separation_front_ = fabs(frontWheelJoint->parent_to_joint_origin_transform.position.x -
+                rotationalSteerJoint->parent_to_joint_origin_transform.position.x);
+            ROS_INFO_STREAM("calculated wheel_separation_rear: " << wheel_separation_rear_);
+            ROS_INFO_STREAM("calculated wheel_separation_front: " << wheel_separation_front_);
         }
 
         if (LookupWheelRadius)

@@ -90,8 +90,8 @@ namespace whi_articulated_steering_controller
          * \param LookupWheelRadius      Whether to parse the URDF for wheel radius
          */
         bool setOdomParamsFromUrdf(ros::NodeHandle& RootNh,
-            const std::string RearWheelName, const std::string RotationalSteerName,
-            bool LookupWheelSeparationH, bool LookupWheelRadius);
+            const std::string& RearWheelName, const std::string& FrontWheelName, const std::string& RotationalSteerName,
+            bool LookupWheelSeparation, bool LookupWheelRadius);
 
         /**
          * \brief Sets the odometry publishing fields
@@ -140,13 +140,13 @@ namespace whi_articulated_steering_controller
         // wheel separation, wrt the midpoint of the wheel width:
         double wheel_separation_rear_{ 0.15 };
         double wheel_separation_front_{ 0.15 };
-        double wheel_separation_h_{ 0.15 };
 
         // wheel radius (assuming it's the same for the left and right wheels):
         double wheel_radius_{ 0.0325 };
 
         // wheel separation and radius calibration multipliers:
-        double wheel_separation_h_multiplier_{ 1.0 };
+        double wheel_separation_rear_multiplier_{ 1.0 };
+        double wheel_separation_front_multiplier_{ 1.0 };
         double wheel_radius_multiplier_{ 1.0 };
         double steer_pos_multiplier_{ 1.0 };
 
