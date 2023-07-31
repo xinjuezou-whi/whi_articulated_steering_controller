@@ -30,7 +30,7 @@ namespace whi_articulated_steering_controller
     ArticulatedSteeringController::ArticulatedSteeringController()
     {
         /// node version and copyright announcement
-        std::cout << "\nWHI articulated steering controller VERSION 00.07" << std::endl;
+        std::cout << "\nWHI articulated steering controller VERSION 00.08" << std::endl;
         std::cout << "Copyright © 2022-2024 Wheel Hub Intelligent Co.,Ltd. All rights reserved\n" << std::endl;
     }
 
@@ -99,7 +99,10 @@ namespace whi_articulated_steering_controller
         ROS_INFO_STREAM_NAMED(name_, "odometry frame_id set to " << odom_frame_id_);
 
         ControllerNh.param("enable_odom_tf", enable_odom_tf_, enable_odom_tf_);
-        ROS_INFO_STREAM_NAMED(name_, "Publishing to tf is " << (enable_odom_tf_ ? "enabled" : "disabled"));
+        ROS_INFO_STREAM_NAMED(name_, "publishing to tf is " << (enable_odom_tf_ ? "enabled" : "disabled"));
+
+        ControllerNh.param("publish_cmd", publish_cmd_, publish_cmd_);
+        ROS_INFO_STREAM_NAMED(name_, "publishing executed twist command is " << (publish_cmd_ ? "enabled" : "disabled"));
 
         // velocity and acceleration limits:
         ControllerNh.param("linear/x/has_velocity_limits", limiter_lin_.has_velocity_limits_, false);
@@ -128,6 +131,12 @@ namespace whi_articulated_steering_controller
         bool lookupWheelSeparation = !ControllerNh.getParam("wheel_separation_rear", wheel_separation_rear_);
         lookupWheelSeparation |= !ControllerNh.getParam("wheel_separation_front", wheel_separation_front_);
         bool lookupWheelRadius = !ControllerNh.getParam("wheel_radius", wheel_radius_);
+
+        if (publish_cmd_)
+        {
+            cmd_vel_pub_.reset(new realtime_tools::RealtimePublisher<geometry_msgs::TwistStamped>(
+                ControllerNh, "cmd_vel_out", 100));
+        }
 
         if (!setOdomParamsFromUrdf(RootNh, rearWheelName, frontWheelName, rotationalSteerName,
             lookupWheelSeparation, lookupWheelRadius))
@@ -282,6 +291,15 @@ namespace whi_articulated_steering_controller
 
         last1_cmd_ = last0_cmd_;
         last0_cmd_ = currCmd;
+
+        // publish executed limited velocity
+        if (publish_cmd_ && cmd_vel_pub_ && cmd_vel_pub_->trylock())
+        {
+            cmd_vel_pub_->msg_.header.stamp = Time;
+            cmd_vel_pub_->msg_.twist.linear.x = currCmd.lin;
+            cmd_vel_pub_->msg_.twist.angular.z = currCmd.ang;
+            cmd_vel_pub_->unlockAndPublish();
+        }
 
         // set Command
         const double wheelVel = currCmd.lin / wheel_radius_;

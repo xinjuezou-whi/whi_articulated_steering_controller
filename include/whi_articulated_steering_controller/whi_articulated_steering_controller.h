@@ -30,6 +30,7 @@ Changelog:
 #include <tf/tfMessage.h>
 #include <urdf_parser/urdf_parser.h>
 #include <geometry_msgs/Polygon.h>
+#include <geometry_msgs/TwistStamped.h>
 
 namespace whi_articulated_steering_controller
 {
@@ -136,6 +137,8 @@ namespace whi_articulated_steering_controller
         std::shared_ptr<realtime_tools::RealtimePublisher<nav_msgs::Odometry> > odom_pub_{ nullptr };
         std::shared_ptr<realtime_tools::RealtimePublisher<tf::tfMessage> > tf_odom_pub_{ nullptr };
         std::unique_ptr<Odometry> odometry_{ nullptr };
+        // publish executed commands
+        std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::TwistStamped> > cmd_vel_pub_;
 
         // wheel separation, wrt the midpoint of the wheel width:
         double wheel_separation_rear_{ 0.15 };
@@ -164,6 +167,9 @@ namespace whi_articulated_steering_controller
 
         // whether to publish odometry to tf or not:
         bool enable_odom_tf_{ true };
+
+        // publish executed velocity:
+        bool publish_cmd_{ false };
 
         // speed limiters:
         Commands last1_cmd_;
