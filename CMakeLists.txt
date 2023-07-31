@@ -131,7 +131,7 @@ FILE(GLOB WHI_SDK_SRC
  "src/sdk/*.cpp"
 )
 add_library(${PROJECT_NAME}
-  src/whi_articulated_steering_controller.cpp ${WHI_SDK_SRC}
+  src/${PROJECT_NAME}.cpp ${WHI_SDK_SRC}
 )
 
 ## Add cmake target dependencies of the library
