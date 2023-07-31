@@ -33,7 +33,7 @@ whi_articulated_steering_controller publishes the footprint with user configured
 ![dynamic_footprint](https://github.com/xinjuezou-whi/whi_articulated_steering_controller/assets/72239958/5384b28a-0107-4849-ac4b-49dd65b5d30e)
 
 ### Parameters
-In controller's parameter yaml file, set the following ones with specified values:
+In the controller's parameter yaml file, set the following ones with specified values:
 ```
 # Dynamic footprint
 topic: footprint
@@ -48,4 +48,17 @@ In costmap's parameter yaml file, add the parameter "footprint_topic", if there 
 footprint_topic: /whi_01/NaviBOT/controller/base_controller/footprint
 ```
 
-> NOTE: set the footprint_topic with an absolute path, which should include the full namespace, like above example
+> NOTE: set the footprint_topic with an absolute path, which should include the full namespace, like the above example
+
+## Published Topics
+- **odom** (nav_msgs/Odometry)
+
+  Odometry is computed from the hardware feedback.
+
+- **/tf** (tf/tfMessage).
+
+  Transform from odom to base_footprint.
+
+- **cmd_vel_out** (geometry_msgs/TwistStamped).
+
+  Available when "publish_cmd" parameter is set to True. It is the Twist after limiters have been applied to the controller input.
