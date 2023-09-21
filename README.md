@@ -43,7 +43,7 @@ tractor_bottom_left: [-0.08, 0.08]
 tractor_bottom_right: [-0.08, -0.08]
 ```
 
-In costmap's parameter yaml file, add the parameter "footprint_topic", if there is none, set its value aligned with the one in the controller's parameter file:
+In costmap's parameter yaml file, add the parameter "footprint_topic" if there is none, and set its value aligned with the one in the controller's parameter file:
 ```
 footprint_topic: /whi_01/NaviBOT/controller/base_controller/footprint
 ```
